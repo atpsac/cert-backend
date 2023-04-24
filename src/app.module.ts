@@ -2,9 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import DatabaseModule from './database/database.module';
-
-import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 // import { AppConfiguration } from './config/app.config';
 // import { JoiValidationSchema } from './config/joi.validation';
 
@@ -29,12 +28,10 @@ import { AuthModule } from './auth/auth.module';
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_DB: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRATION_TIME: Joi.string().required(),
+        // JWT_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
-
-    ProductsModule,
-    AuthModule,
+    AuthModule
 
   ],
 })

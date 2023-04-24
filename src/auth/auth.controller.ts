@@ -7,7 +7,7 @@ import { RawHeaders, GetUser, Auth } from './decorators';
 import { RoleProtected } from './decorators/role-protected.decorator';
 
 import { CreateUserDto, LoginUserDto } from './dto';
-import UserModel from './entities/user.entity';
+import UserModel from '../users/user.model';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
 
@@ -41,7 +41,7 @@ export class AuthController {
   testingPrivateRoute(
     @Req() request: Express.Request,
     @GetUser() user: UserModel,
-    @GetUser('email') userEmail: string,
+    @GetUser('username') username: string,
     
     @RawHeaders() rawHeaders: string[],
     @Headers() headers: IncomingHttpHeaders,
@@ -52,7 +52,7 @@ export class AuthController {
       ok: true,
       message: 'Hola Mundo Private',
       user,
-      userEmail,
+      username,
       rawHeaders,
       headers
     }
@@ -62,7 +62,7 @@ export class AuthController {
   // @SetMetadata('roles', ['admin','super-user'])
 
   @Get('private2')
-  @RoleProtected( ValidRoles.superUser, ValidRoles.admin )
+  @RoleProtected( ValidRoles.admin )
   @UseGuards( AuthGuard(), UserRoleGuard )
   privateRoute2(
     @GetUser() user: UserModel

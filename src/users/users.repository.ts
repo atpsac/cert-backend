@@ -27,6 +27,25 @@ class UsersRepository {
     return new UserModel(entity);
   }
 
+  async getByUsername(username: string) {
+
+    const databaseResponse = await this.databaseService.runQuery(
+      `
+        SELECT users.*,
+          FROM users
+          WHERE users.username=$1
+          `,
+      [username]
+    );
+    const entity = databaseResponse.rows[0];
+    if (!entity) {
+      throw new NotFoundException();
+    }
+    return new UserModel(entity);
+
+
+  }
+
   async create(userData: CreateUserDto) {
     // if (userData.address) {
     //   return this.createUserWithAddress(userData);

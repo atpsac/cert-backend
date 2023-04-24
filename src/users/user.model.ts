@@ -5,6 +5,7 @@ export type UserModelData = {
   id: number;
   username: string;
   password: string;
+  isActive: boolean;
   roles: ValidRoles[];
 };
 class UserModel {
@@ -12,12 +13,14 @@ class UserModel {
   username: string;
   @Exclude()
   password: string;
+  isActive: boolean;
   roles: ValidRoles[];
 
   constructor(data: UserModelData) {
     this.id = data.id;
     this.username = data.username;
     this.password = data.password;
+    this.isActive = data.isActive;
     this.roles = data.roles;
   }
 }

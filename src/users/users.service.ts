@@ -24,27 +24,10 @@ class UsersService {
     }
   }
 
-  async findByUsername(username: string): Promise < UserModel > {
-
-    const user = await this.userRepository.findOne(
-      {
-        relations: {
-          roles: true
-        },
-        where: { username },
-        select: {
-          id: true,
-          username: true,
-          password: true,
-          isActive: true,
-        }
-      });
-  
-    if(!user)
-      throw new NotFoundException(`Username is not found`);
-  
-    return user;
+  async findByUsername(username: string) {
+    return this.usersRepository.getByUsername(username);
   }
+
 
 }
 
