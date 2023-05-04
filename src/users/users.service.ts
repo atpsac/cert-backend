@@ -24,6 +24,10 @@ class UsersService {
     }
   }
 
+  async findByUsernameWithRoles(username: string) {
+    return this.usersRepository.getUserWithRoles(username);
+  }
+
   async findByUsername(username: string) {
     return this.usersRepository.getByUsername(username);
   }

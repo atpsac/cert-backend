@@ -25,12 +25,12 @@ export class JwtStrategy extends PassportStrategy( Strategy ) {
         const { username } = payload;
 
         // TO-DO: Get a RAW data    
-        const user = await this.usersService.findByUsername(username);
+        const user = await this.usersService.findByUsernameWithRoles(username);
 
         if ( !user ) 
             throw new UnauthorizedException('Token not valid')
             
-        if ( !user.isActive ) 
+        if ( !user.situation ) 
             throw new UnauthorizedException('User is inactive, talk with an admin');
         
 

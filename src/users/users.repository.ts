@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/createUser.dto';
 import PostgresErrorCode from '../database/postgresErrorCode.enum';
 import UserAlreadyExistsException from './exceptions/userAlreadyExists.exception';
 import { isDatabaseError } from '../types/databaseError';
+import UserWithRolesModel from './userWithRoles.model';
 
 @Injectable()
 class UsersRepository {
@@ -14,9 +15,9 @@ class UsersRepository {
   async getById(id: number) {
     const databaseResponse = await this.databaseService.runQuery(
       `
-        SELECT users.*,
-          FROM users
-          WHERE users.id=$1
+        SELECT user.*,
+          FROM user
+          WHERE user.id=$1
           `,
       [id],
     );
@@ -31,10 +32,9 @@ class UsersRepository {
 
     const databaseResponse = await this.databaseService.runQuery(
       `
-        SELECT users.*,
-          FROM users
-          WHERE users.username=$1
-          `,
+        SELECT "user".* FROM "user"
+        WHERE "user".username = $1 AND "user".situation = 'true'
+      `,
       [username]
     );
     const entity = databaseResponse.rows[0];
@@ -46,6 +46,47 @@ class UsersRepository {
 
   }
 
+  // SELECT "user".id, "user".username, "user".create_user, "user".create_date, "user".update_user, "user".update_date, "user".situation
+
+
+  async getUserWithRoles(username: string) {
+    const usersDatabaseResponse = await this.databaseService.runQuery(
+      `
+      SELECT "user".id, "user".username, "user".password,"user".create_user, "user".create_date, "user".update_user, "user".update_date, "user".situation
+      FROM "user"
+      WHERE "user".username = $1
+      AND "user".situation = 'true'
+      `,
+      [username]
+    );
+
+    if (!usersDatabaseResponse.rows[0]) {
+      throw new NotFoundException();
+    }
+
+    const [ user ] = usersDatabaseResponse.rows;
+
+    const rolesDatabaseResponse = await this.databaseService.runQuery(
+      `
+      SELECT "role".*
+      FROM "user_role"
+      JOIN "role" ON "role".id = "user_role".id_role
+      WHERE "user_role".id_user = $1
+      `,
+      [user.id],
+    );
+
+    return new UserWithRolesModel({
+      ...user,
+      roles: rolesDatabaseResponse.rows
+    });
+
+
+
+  }
+
+
+
   async create(userData: CreateUserDto) {
     // if (userData.address) {
     //   return this.createUserWithAddress(userData);
@@ -53,7 +94,7 @@ class UsersRepository {
     try {
       const databaseResponse = await this.databaseService.runQuery(
         `
-        INSERT INTO users (
+        INSERT INTO user (
           username,
           password
           ) VALUES (

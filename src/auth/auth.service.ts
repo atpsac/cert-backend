@@ -32,9 +32,9 @@ export class AuthService {
 
       return {
         ...user,
-        token: this.getJwtToken({ username: (await user).username })
+        token: this.getJwtToken({ username: (await user).username }),
+        message: 'ok'
       };
-      // TODO: Retornar el JWT de acceso
 
     } catch (error) {
       this.handleDBErrors(error);
@@ -42,47 +42,47 @@ export class AuthService {
 
   }
 
-  async login( loginUserDto: LoginUserDto ) {
+  async login(loginUserDto: LoginUserDto) {
 
     const { password, username } = loginUserDto;
 
-    const user = await this.usersService.findByUsername(username);
+    const user = await this.usersService.findByUsernameWithRoles(username);
 
-    if ( !user ) 
+    if (!user)
       throw new UnauthorizedException('Credentials are not valid (username)');
 
-    if ( !bcrypt.compareSync( password, user.password ) )
+    if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credentials are not valid (password)');
 
     return {
       ...user,
-      token: this.getJwtToken({ username: user.username })
+      token: this.getJwtToken({ username: user.username }),
+      message: 'ok'
     };
   }
 
-  async checkAuthStatus( user: UserModel ){
+  async checkAuthStatus(user: UserModel) {
 
     return {
       ...user,
-      token: this.getJwtToken({ username: user.username })
+      token: this.getJwtToken({ username: user.username }),
+      message: 'ok'
     };
 
   }
 
+  private getJwtToken(payload: JwtPayload) {
 
-
-  private getJwtToken( payload: JwtPayload ) {
-
-    const token = this.jwtService.sign( payload );
+    const token = this.jwtService.sign(payload);
     return token;
 
   }
 
-  private handleDBErrors( error: any ): never {
+  private handleDBErrors(error: any): never {
 
 
-    if ( error.code === '23505' ) 
-      throw new BadRequestException( error.detail );
+    if (error.code === '23505')
+      throw new BadRequestException(error.detail);
 
     console.log(error)
 
