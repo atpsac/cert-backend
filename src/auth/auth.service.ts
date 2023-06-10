@@ -48,11 +48,12 @@ export class AuthService {
 
     const user = await this.usersService.findByUsernameWithRoles(username);
 
-    if (!user)
-      throw new UnauthorizedException('Credentials are not valid (username)');
+    // if (!user)
+    //   throw new UnauthorizedException('Credentials are not valid (username)');
 
-    if (!bcrypt.compareSync(password, user.password))
+    if (!bcrypt.compareSync(password, user.password)) {
       throw new UnauthorizedException('Credentials are not valid (password)');
+    }
 
     return {
       ...user,

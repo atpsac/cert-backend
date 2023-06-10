@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import DatabaseService from '../database/database.service';
 import UserModel from './user.model';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -61,10 +61,10 @@ class UsersRepository {
     );
 
     if (!usersDatabaseResponse.rows[0]) {
-      throw new NotFoundException();
+      throw new UnauthorizedException('Credentials are not valid (username)')
     }
 
-    const [ user ] = usersDatabaseResponse.rows;
+    const [user] = usersDatabaseResponse.rows;
 
     const rolesDatabaseResponse = await this.databaseService.runQuery(
       `
