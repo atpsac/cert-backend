@@ -6,7 +6,7 @@ import UsersService from 'src/users/users.service'; '../../users/users.service';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy( Strategy ) {
+export class AccessTokenStrategy extends PassportStrategy( Strategy, 'jwt-access-token' ) {
 
     constructor(
         private readonly usersService: UsersService,
@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy( Strategy ) {
     ) {
 
         super({
-            secretOrKey: configService.get('JWT_SECRET'),
+            secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         });
     }
@@ -31,8 +31,7 @@ export class JwtStrategy extends PassportStrategy( Strategy ) {
             throw new UnauthorizedException('Token not valid')
             
         if ( !user.situation ) 
-            throw new UnauthorizedException('User is inactive, talk with an admin');
-        
+            throw new UnauthorizedException('User is inactive, talk with an admin');        
 
         return user;
     }

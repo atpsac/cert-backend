@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { IncomingHttpHeaders } from 'http';
 
 import { AuthService } from './auth.service';
+import { Request } from 'express';
 import { RawHeaders, GetUser, Auth } from './decorators';
 import { RoleProtected } from './decorators/role-protected.decorator';
 
@@ -25,17 +26,31 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
-  @Get('check-status')
-  @Auth()
-  checkAuthStatus(
-    @GetUser() user: UserModel
-  ) {
-    return this.authService.checkAuthStatus(user);
+  @Get('logout')
+  @UseGuards(AuthGuard('jwt-access-token'))
+  logout(@GetUser('id') userid: number,) {
+    this.authService.logout(userid);
   }
+
+  @Get('refresh')
+  @UseGuards(AuthGuard('jwt-refresh-token'))
+  refreshTokens(@Req() req: Express.Request) {
+    const userId = req.user['userid'];
+    const refreshToken = req.user['refreshToken'];
+    return this.authService.refreshTokens(userId, refreshToken);
+  }
+
+  // @Get('check-status')
+  // @Auth()
+  // checkAuthStatus(
+  //   @GetUser() user: UserModel
+  // ) {
+  //   return this.authService.checkAuthStatus(user);
+  // }
 
 
   @Get('private')
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt-access-token'))
   testingPrivateRoute(
     @Req() request: Express.Request,
     @GetUser() user: UserModel,
@@ -61,7 +76,7 @@ export class AuthController {
 
   @Get('private2')
   @RoleProtected(ValidRoles.admin)
-  @UseGuards(AuthGuard(), UserRoleGuard)
+  @UseGuards(AuthGuard('jwt-access-token'), UserRoleGuard)
   privateRoute2(
     @GetUser() user: UserModel
   ) {

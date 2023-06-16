@@ -6,6 +6,7 @@ import PostgresErrorCode from '../database/postgresErrorCode.enum';
 import UserAlreadyExistsException from './exceptions/userAlreadyExists.exception';
 import { isDatabaseError } from '../types/databaseError';
 import UserWithRolesModel from './userWithRoles.model';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Injectable()
 class UsersRepository {
@@ -15,9 +16,10 @@ class UsersRepository {
   async getById(id: number) {
     const databaseResponse = await this.databaseService.runQuery(
       `
-        SELECT user.*,
-          FROM user
-          WHERE user.id=$1
+        SELECT "user".*
+          FROM "user"
+          WHERE "user".id=$1
+          AND "user".situation = 'true'
           `,
       [id],
     );
@@ -96,13 +98,15 @@ class UsersRepository {
         `
         INSERT INTO user (
           username,
-          password
+          password,
+          refreshtoken
           ) VALUES (
             $1,
-            $2
+            $2,
+            $3
             ) RETURNING *
             `,
-        [userData.username, userData.password],
+        [userData.username, userData.password, userData.refreshtoken],
       );
       return new UserModel(databaseResponse.rows[0]);
     } catch (error) {
@@ -115,6 +119,25 @@ class UsersRepository {
       throw error;
     }
   }
+
+  async updateRefreshToken(id: number, updateUserDto: UpdateUserDto) {
+    const databaseResponse = await this.databaseService.runQuery(
+      `
+      UPDATE "user"
+      SET refreshtoken = $2
+      WHERE "user".id = $1 RETURNING *
+      `,
+      [id, updateUserDto.refreshtoken]
+    );
+    const entity = databaseResponse.rows[0];
+    if (!entity) {
+      throw new NotFoundException();
+    }
+    return new UserModel(entity);
+
+  }
+
+
 }
 
 // async getByEmail(email: string) {
